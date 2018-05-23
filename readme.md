@@ -4,7 +4,7 @@ Finlay Braithwaite, OCAD University
 ## Introduction
 As the focus of my master’s education in Digital Futures at OCAD, I will develop a prototype for a **positionally-aware microphone and DSP alignment system**. This system would allow for automatic alignment of multiple microphone perspectives to sound sources.
 ## Production Methods
-## Sync Reference
+### Sync Reference
 In production, the distance of sound sources and microphones relative to one another would be measured. My research will explore modulating a high resolution longitudinal timecode reference in the ultrasonic frequency domain, providing a platform to document relative TOAs from multiple sources at multiple microphones.
 ### Capturing Metadata
 The high-resolution positional reference generated and captured in production is then translated into metadata, embedded with or near the correlating audio information; the standard audio recording. Maintaining synchronization of this metadata to the recorded audio is of paramount importance.
