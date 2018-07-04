@@ -1,0 +1,11 @@
+div {
+    width: 500%;
+}
+
+.text {
+    fill: white
+}
+
+.nottext:hover {
+    fill: black
+}
