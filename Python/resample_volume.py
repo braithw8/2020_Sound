@@ -3,6 +3,9 @@ import struct
 import array
 
 resampleRate = 76543
+volume = 0.5
+
+destinationWave = 'resampleVolume.wav'
 
 integerWave = []
 
@@ -57,7 +60,10 @@ for x in range(resampleNFrames - 1):
     nextSampleDiff = nextSample - currentSample
     amountBetween = nextSampleDiff * linearIntPoint
     currentInterpolation = currentSample + amountBetween
-    newSample = int(round(currentInterpolation))
+    volumeAdjusted = currentInterpolation * volume
+    newSample = int(round(volumeAdjusted))
+
+
 
     writeIntWave.append(newSample)
 
@@ -73,7 +79,7 @@ for x in range(len(writeIntWave)):
     byteArrayWave.append(currentByte[0])
     byteArrayWave.append(currentByte[1])
 
-wFile = wave.open('newWave.wav', mode='wb')
+wFile = wave.open(destinationWave, mode='wb')
 
 #wFile.setparams(rParams)
 
