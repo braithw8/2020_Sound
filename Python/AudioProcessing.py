@@ -6,10 +6,12 @@
 import wave
 import struct
 import math
+import numpy as np
+from scipy import signal
 
 def openWaveFile():
     inputWaveFile = ''
-    inputWaveFile = input("Which wave file do you want to process?")
+    inputWaveFile = input("\nWhich wave file do you want to process?: ")
     try:
         rawFile = wave.open(inputWaveFile, mode='rb')
     except FileNotFoundError:
@@ -23,10 +25,14 @@ def openWaveFile():
             integerWave.append(int.from_bytes(rawDump[x:y], byteorder='little', signed=True))
     return integerWave, parameters
 
-def exportAudio(inputAudio, parameters, outputWave):
+def exportAudio(inputWave, parameters, outputWave):
     byteArrayWave = bytearray()
-    for x in range(len(inputAudio)):
-        currentInt = inputAudio[x]
+    for x in range(len(inputWave)):
+        currentInt = inputWave[x]
+        if currentInt > 32767:
+            currentInt = 32767
+        elif currentInt < -32768:
+            currentInt = -32768
         currentByte = struct.pack('<h', currentInt)
         byteArrayWave.append(currentByte[0])
         byteArrayWave.append(currentByte[1])
@@ -141,14 +147,99 @@ def variVibrato(inputWave, parameters, vibratoFrequency, vibratoIntensity, modFr
 
     return processedWave
 
+def reverse(inputWave):
+    processedWave = []
+    for x in range(len(inputWave)):
+        newSample = inputWave[-(x+1)]
+        processedWave.append(newSample)
+    return processedWave
+
+def simpleFilter(inputWave, filterType):
+
+    processedWave = []
+
+    if filterType == 'notch':
+
+        filterSample = 0
+        for x in range(len(inputWave)):
+            if x < len(inputWave) - 2:
+                filterSample = int((inputWave[x] + inputWave[x+2]) / 2)
+
+            processedWave.append(filterSample)
+        #WHAT TO DO FOR LAST SAMPLE?
+    elif filterType == 'lowpass':
+
+        filterSample = 0
+        for x in range(len(inputWave)):
+            if x < len(inputWave) - 1:
+                filterSample = int((inputWave[x] + inputWave[x+1]) / 2)
+
+            processedWave.append(filterSample)
+
+    elif filterType == 'highpass':
+
+        filterSamplee = 0
+        for x in range(len(inputWave)):
+            if x < len(inputWave) - 1:
+                filterSample = int((inputWave[x] - inputWave[x+1]) / 2)
+
+            processedWave.append(filterSample)
+
+    elif filterType == 'bandpass':
+
+        filterSample = 0
+        for x in range(len(inputWave)):
+            if x < len(inputWave) - 2:
+                filterSample = int((inputWave[x] - integerWave[x+2]) / 2)
+
+            processedWave.append(filterSample)
+
+    return processedWave
+
+#simpleFilter('JustAnotherDay10.wav', 'bandpass', 'simpleFilterBandpass01.wav')
+
+def butterworthFilter(inputWave, filterOrder, filterType, cutoffFreq):
+    filterOrder = int(filterOrder)
+    b, a = signal.butter(filterOrder, cutoffFreq, filterType)
+
+    processedWave = signal.filtfilt(b,a, inputWave).tolist()
+    for x in range(len(processedWave)):
+        processedWave[x] = int(round(processedWave[x]))
+
+    return processedWave
+
+    #butterworthFilter('JustAnotherDay10.wav', 6, 'bandpass', [1/20, 1/10], 'butterworthBandpass01.wav')
+
+def audioSum (sumInput1, sumLevel1, sumInput2, sumLevel2):
+	sumWave = []
+	currentSample = 0
+	for x in range(len(sumInput1)):
+		if x < len(sumInput2):
+			currentSample = int(round((sumInput1[x] * sumLevel1) + (sumInput2[x] * sumLevel2)))
+		elif x >= len(sumInput2):
+			currentSample = int(round(sumInput1[x] * sumLevel1))
+		sumWave.append(currentSample)
+	return sumWave
+
+def audioMix(inputA, levelA, inputB, levelB):
+
+	if len(inputA) >= len(inputB):
+		processedWave = audioSum(inputA, levelA, inputB, levelB)
+	else:
+		processedWave = audioSum(inputB, levelB, inputA, levelA)
+
+	return processedWave
+
+
+#audioMix('inputA.wav', .5, 'inputB.wav', .5, 'audioMix01.wav')
+
 if __name__ == "__main__":
-    print('Welcome to the Audio Processor')
-    print('0 to exit')
+    print('\n***********************************\n* Welcome to the Audio Processor *\n***********************************\n')
     integerWave, parameters = openWaveFile()
     prompt = ''
     while prompt != '0':
-        prompt = input("\t1: Varispeed\n\t2: Vibrato\n\t3: VariVibrato\n\t4: SimpleFilter\n\t5: ButterworthFilter\n\t6: Mix\n\t7: Export to file\nSelect a process: ")
-        if prompt == '7':
+        prompt = input("\n\t1: Varispeed\n\t2: Vibrato\n\t3: VariVibrato\n\t4: SimpleFilter\n\t5: ButterworthFilter\n\t6: Mix\n\t7: Reverse\n\t8: Export to file\n\t0: EXIT\n\nSelect a process: ")
+        if prompt == '8':
             outputWave = ''
             outputWave = input("Name the output file: ")
             exportAudio(integerWave, parameters, outputWave)
@@ -172,3 +263,69 @@ if __name__ == "__main__":
             modIntensity = ''
             modIntensity = input("Enter Modulation Intensity: ")
             integerWave = variVibrato(integerWave, parameters, vibratoRate, vibratoAmount, modFrequency, modIntensity)
+        if prompt == '4':
+            filterPrompt = ''
+            filterPrompt = input("\n\t1: Lowpass\n\t2: Highpass\n\t3: Bandpass\n\t4: Notch\n\nEnter a filter type: ")
+            if filterPrompt == '1':
+                integerWave = simpleFilter(integerWave, 'lowpass')
+            elif filterPrompt == '2':
+                integerWave = simpleFilter(integerWave, 'highpass')
+            elif filterPrompt == '3':
+                integerWave = simpleFilter(integerWave, 'bandpass')
+            elif filterPrompt == '4':
+                integerWave = simpleFilter(integerWave, 'notch')
+        if prompt == '5':
+            filterTypePrompt = ''
+            filterTypePrompt = input("\n\t1: Lowpass\n\t2: Highpass\n\t3: Bandpass\n\t4: Notch\n\nEnter a filter type: ")
+            if filterTypePrompt == '1':
+                filterType = 'lowpass'
+                filterOrderPrompt = ''
+                filterOrderPrompt = input("\nEnter a filter order 1-6: ")
+                filterFreqAPrompt = ''
+                filterFreqAPrompt = input("\nEnter a cutoff frequency in Hz: ")
+                filterFreq = [float(filterFreqAPrompt) / (parameters[2] / 2)]
+                integerWave = butterworthFilter(integerWave, filterOrderPrompt, filterType, filterFreq)
+            elif filterTypePrompt == '2':
+                filterType = 'highpass'
+                filterOrderPrompt = ''
+                filterOrderPrompt = input("\nEnter a filter order 1-6: ")
+                filterFreqAPrompt = ''
+                filterFreqAPrompt = input("\nEnter a cutoff frequency in Hz: ")
+                filterFreq = [float(filterFreqAPrompt) / (parameters[2] / 2)]
+                integerWave = butterworthFilter(integerWave, filterOrderPrompt, filterType, filterFreq)
+            elif filterTypePrompt == '3':
+                filterType = 'bandpass'
+                filterOrderPrompt = ''
+                filterOrderPrompt = input("\nEnter a filter order 1-4: ")
+                filterFreqAPrompt = ''
+                filterFreqAPrompt = input("\nEnter a lower cutoff frequency in Hz: ")
+                filterFreqBPrompt = ''
+                filterFreqBPrompt = input("\nEnter a high cutoff frequency in Hz: ")
+                filterFreq = [float(filterFreqAPrompt) / (parameters[2] / 2), float(filterFreqBPrompt) / (parameters[2] / 2)]
+                integerWave = butterworthFilter(integerWave, filterOrderPrompt, filterType, filterFreq)
+            elif filterTypePrompt == '4':
+                filterType = 'bandstop'
+                filterOrderPrompt = ''
+                filterOrderPrompt = input("\nEnter a filter order 1-4: ")
+                filterFreqAPrompt = ''
+                filterFreqAPrompt = input("\nEnter a lower cutoff frequency in Hz: ")
+                filterFreqBPrompt = ''
+                filterFreqBPrompt = input("\nEnter a high cutoff frequency in Hz: ")
+                filterFreq = [float(filterFreqAPrompt) / (parameters[2] / 2), float(filterFreqBPrompt) / (parameters[2] / 2)]
+                integerWave = butterworthFilter(integerWave, filterOrderPrompt, filterType, filterFreq)
+        if prompt == '6':
+            mixLevelAPrompt = ''
+            mixLevelAPrompt = input('\nEnter a mix level for loaded wave (0-100): ')
+            mixLevelAPrompt = float(mixLevelAPrompt) / 100
+            print("\nSelect a Wave File to Mix\n")
+            integerWaveB, parametersB = openWaveFile()
+            mixLevelBPrompt = ''
+            mixLevelBPrompt = input('\nEnter a mix level for loaded wave (0-100): ')
+            mixLevelBPrompt = float(mixLevelBPrompt) / 100
+
+            integerWave = audioMix(integerWaveB, mixLevelBPrompt, integerWave, mixLevelAPrompt)
+
+
+
+        if prompt == '7':
+            integerWave = reverse(integerWave)
