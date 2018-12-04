@@ -46,7 +46,6 @@ def clockCount(inputWave):
             y = y + 1
             duration.append(y)
 
-
     return duration
 
 def clockFix(inputWave, clockCount):
@@ -67,6 +66,18 @@ def clockFix(inputWave, clockCount):
             fixedWave.append(sampleCalc)
         start = end + 1
     return fixedWave
+
+def testApp(varispeedAmount):
+    audioWave, parameters = openWaveFile()
+    clockWave = clockMaker(len(audioWave))
+    audioWave = varispeed(audioWave, parameters, varispeedAmount)
+    clockWave = varispeed(clockWave, parameters, varispeedAmount)
+    clockWave = cleanData(clockWave)
+    clock = clockCount(clockWave)
+    fixedWave = clockFix(audioWave, clock)
+    return fixedWave, parameters
+
+
 
 
 
