@@ -11,7 +11,7 @@ from scipy import signal
 
 def openWaveFile():
     inputWaveFile = ''
-    inputWaveFile = input("\nWhich wave file do you want to process?: ")
+    inputWaveFile = input("\nWhich wave file do you want to process? (example: 'wave.wav'): ")
     try:
         rawFile = wave.open(inputWaveFile, mode='rb')
     except FileNotFoundError:
@@ -202,7 +202,7 @@ def butterworthFilter(inputWave, filterOrder, filterType, cutoffFreq):
     filterOrder = int(filterOrder)
     b, a = signal.butter(filterOrder, cutoffFreq, filterType)
 
-    processedWave = signal.filtfilt(b,a, inputWave).tolist()
+    processedWave = signal.filtfilt(b, a, inputWave).tolist()
     for x in range(len(processedWave)):
         processedWave[x] = int(round(processedWave[x]))
 
@@ -234,38 +234,40 @@ def audioMix(inputA, levelA, inputB, levelB):
 #audioMix('inputA.wav', .5, 'inputB.wav', .5, 'audioMix01.wav')
 
 if __name__ == "__main__":
-    print('\n***********************************\n* Welcome to the Audio Processor *\n***********************************\n')
+    print('\n***********************************\n* Welcome to the Audio Processor *\n***********************************\n\nCurrent version works only with 16bit mono .wav files.')
     integerWave, parameters = openWaveFile()
     prompt = ''
     while prompt != '0':
-        prompt = input("\n\t1: Varispeed\n\t2: Vibrato\n\t3: VariVibrato\n\t4: SimpleFilter\n\t5: ButterworthFilter\n\t6: Mix\n\t7: Reverse\n\t8: Export to file\n\t0: EXIT\n\nSelect a process: ")
+        prompt = input("\n\t1: Varispeed\n\t2: Vibrato\n\t3: VariVibrato\n\t4: Simple Filters\n\t5: Butterworth Filters\n\t6: Mix\n\t7: Reverse\n\t8: Export to file\n\t0: EXIT\n\nSelect a process: ")
         if prompt == '8':
             outputWave = ''
             outputWave = input("Name the output file: ")
             exportAudio(integerWave, parameters, outputWave)
         if prompt == '1':
             resampleRate = ''
-            resampleRate = input("Specify Speed (100 is normal): ")
+            resampleRate = input("Specify Speed % (example: '100' is original rate): ")
             integerWave = varispeed(integerWave, parameters, resampleRate)
         if prompt == '2':
             vibratoRate = ''
-            vibratoRate = input("Enter Vibrato Frequency: ")
+            vibratoRate = input("Enter Vibrato Frequency (example: '0.2' for an LFO): ")
             vibratoAmount = ''
-            vibratoAmount = input("Enter Vibrato Amount: ")
+            vibratoAmount = input("Enter Vibrato Amount (example: '1000'): ")
             integerWave = vibratoAudio(integerWave, parameters, vibratoRate, vibratoAmount)
         if prompt == '3':
+            print('\n*\tVaries the rate of vibrato\t*')
             vibratoRate = ''
-            vibratoRate = input("Enter Vibrato Frequency: ")
+            vibratoRate = input("\nEnter Vibrato Frequency (example: '0.1'): ")
             vibratoAmount = ''
-            vibratoAmount = input("Enter Vibrato Amount: ")
+            vibratoAmount = input("Enter Vibrato Amount (example: '300'): ")
             modFrequency = ''
-            modFrequency = input("Enter Modulation Frequency: ")
+            modFrequency = input("Enter Modulation Frequency (example: '.01'): ")
             modIntensity = ''
-            modIntensity = input("Enter Modulation Intensity: ")
+            modIntensity = input("Enter Modulation Intensity (example: '.001'): ")
             integerWave = variVibrato(integerWave, parameters, vibratoRate, vibratoAmount, modFrequency, modIntensity)
         if prompt == '4':
+            print('\nThese filters are basic convolution functions that\ndo not allow for changes in cutoff frequency or slope.')
             filterPrompt = ''
-            filterPrompt = input("\n\t1: Lowpass\n\t2: Highpass\n\t3: Bandpass\n\t4: Notch\n\nEnter a filter type: ")
+            filterPrompt = input("\n\t1: Lowpass\n\t2: Highpass\n\t3: Bandpass\n\t4: Notch\n\nSelect a filter type: ")
             if filterPrompt == '1':
                 integerWave = simpleFilter(integerWave, 'lowpass')
             elif filterPrompt == '2':
@@ -276,13 +278,13 @@ if __name__ == "__main__":
                 integerWave = simpleFilter(integerWave, 'notch')
         if prompt == '5':
             filterTypePrompt = ''
-            filterTypePrompt = input("\n\t1: Lowpass\n\t2: Highpass\n\t3: Bandpass\n\t4: Notch\n\nEnter a filter type: ")
+            filterTypePrompt = input("\n\t1: Lowpass\n\t2: Highpass\n\t3: Bandpass\n\t4: Notch\n\nSelect a filter type: ")
             if filterTypePrompt == '1':
                 filterType = 'lowpass'
                 filterOrderPrompt = ''
                 filterOrderPrompt = input("\nEnter a filter order 1-6: ")
                 filterFreqAPrompt = ''
-                filterFreqAPrompt = input("\nEnter a cutoff frequency in Hz: ")
+                filterFreqAPrompt = input("\nEnter a cutoff frequency in Hz (example: '400'): ")
                 filterFreq = [float(filterFreqAPrompt) / (parameters[2] / 2)]
                 integerWave = butterworthFilter(integerWave, filterOrderPrompt, filterType, filterFreq)
             elif filterTypePrompt == '2':
@@ -290,7 +292,7 @@ if __name__ == "__main__":
                 filterOrderPrompt = ''
                 filterOrderPrompt = input("\nEnter a filter order 1-6: ")
                 filterFreqAPrompt = ''
-                filterFreqAPrompt = input("\nEnter a cutoff frequency in Hz: ")
+                filterFreqAPrompt = input("\nEnter a cutoff frequency in Hz (example: '400'): ")
                 filterFreq = [float(filterFreqAPrompt) / (parameters[2] / 2)]
                 integerWave = butterworthFilter(integerWave, filterOrderPrompt, filterType, filterFreq)
             elif filterTypePrompt == '3':
@@ -298,9 +300,9 @@ if __name__ == "__main__":
                 filterOrderPrompt = ''
                 filterOrderPrompt = input("\nEnter a filter order 1-4: ")
                 filterFreqAPrompt = ''
-                filterFreqAPrompt = input("\nEnter a lower cutoff frequency in Hz: ")
+                filterFreqAPrompt = input("\nEnter a lower cutoff frequency in Hz (example: '400'): ")
                 filterFreqBPrompt = ''
-                filterFreqBPrompt = input("\nEnter a high cutoff frequency in Hz: ")
+                filterFreqBPrompt = input("\nEnter a high cutoff frequency in Hz (example: '1000'): ")
                 filterFreq = [float(filterFreqAPrompt) / (parameters[2] / 2), float(filterFreqBPrompt) / (parameters[2] / 2)]
                 integerWave = butterworthFilter(integerWave, filterOrderPrompt, filterType, filterFreq)
             elif filterTypePrompt == '4':
@@ -308,9 +310,9 @@ if __name__ == "__main__":
                 filterOrderPrompt = ''
                 filterOrderPrompt = input("\nEnter a filter order 1-4: ")
                 filterFreqAPrompt = ''
-                filterFreqAPrompt = input("\nEnter a lower cutoff frequency in Hz: ")
+                filterFreqAPrompt = input("\nEnter a lower cutoff frequency in Hz (example: '400'): ")
                 filterFreqBPrompt = ''
-                filterFreqBPrompt = input("\nEnter a high cutoff frequency in Hz: ")
+                filterFreqBPrompt = input("\nEnter a high cutoff frequency in Hz (example: '1000'): ")
                 filterFreq = [float(filterFreqAPrompt) / (parameters[2] / 2), float(filterFreqBPrompt) / (parameters[2] / 2)]
                 integerWave = butterworthFilter(integerWave, filterOrderPrompt, filterType, filterFreq)
         if prompt == '6':
