@@ -62,7 +62,12 @@ def clockFix(inputWave, clockCount):
             xCalc[k] = xCalc[k] * xDiv
         spline = interpolate.interp1d(xCalc, yCalc, kind='quadratic')
         for x in range(0, 100):
-            sampleCalc = int(spline(x))
+            if x == 0:
+                sampleCalc = inputWave[start]
+            elif x == 99:
+                sampleCalc = inputWave[end]
+            else:
+                sampleCalc = int(spline(x))
             fixedWave.append(sampleCalc)
         start = end + 1
     return fixedWave
@@ -77,7 +82,16 @@ def testApp(varispeedAmount):
     fixedWave = clockFix(audioWave, clock)
     return fixedWave, parameters
 
-
+def testApp2(vibratoFrequency, vibratoIntensity):
+    audioWave, parameters = openWaveFile()
+    clockWave = clockMaker(len(audioWave))
+    audioWave = vibratoAudio(audioWave, parameters, vibratoFrequency, vibratoIntensity)
+    clockWave = vibratoAudio(clockWave, parameters, vibratoFrequency, vibratoIntensity)
+    clockWave = cleanData(clockWave)
+    clock = clockCount(clockWave)
+    #print(clock[0:10000])
+    fixedWave = clockFix(audioWave, clock)
+    return fixedWave, parameters, audioWave
 
 
 
