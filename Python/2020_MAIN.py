@@ -72,6 +72,8 @@ def clockFix(inputWave, clockCount):
         start = end + 1
     return fixedWave
 
+# creates static varispeed and fixes it.
+
 def testApp(varispeedAmount):
     audioWave, parameters = openWaveFile()
     clockWave = clockMaker(len(audioWave))
@@ -81,6 +83,8 @@ def testApp(varispeedAmount):
     clock = clockCount(clockWave)
     fixedWave = clockFix(audioWave, clock)
     return fixedWave, parameters
+
+#creates variable varispeed and fixes it.
 
 def testApp2(vibratoFrequency, vibratoIntensity):
     audioWave, parameters = openWaveFile()
